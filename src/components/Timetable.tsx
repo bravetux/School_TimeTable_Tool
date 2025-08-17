@@ -82,8 +82,8 @@ const Timetable = () => {
   return (
     <>
       <Card className="w-full print:shadow-none print:border-none">
-        <CardHeader className="flex flex-row items-center justify-between print:hidden">
-          <CardTitle className="text-2xl">Weekly School Timetable</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between print:hidden bg-slate-100 p-4 rounded-t-lg">
+          <CardTitle className="text-2xl text-slate-800">Weekly School Timetable</CardTitle>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => setIsSettingsOpen(true)}>
               <Settings className="mr-2 h-4 w-4" />
@@ -105,7 +105,7 @@ const Timetable = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-sky-100">
                   <TableHead className="font-bold min-w-[150px] p-2 print:p-1 print:text-xs">Time / Day</TableHead>
                   {days.map((day) => (
                     <TableHead key={day} className="text-center font-bold min-w-[120px] p-2 print:p-1 print:text-xs">{day}</TableHead>
@@ -113,41 +113,50 @@ const Timetable = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {schedule.map((slot, slotIndex) => (
-                  <TableRow key={slotIndex}>
-                    <TableCell className="font-medium p-2 print:py-0.5 print:px-1 print:text-xs">
-                      <div>{`${slot.startTime} - ${slot.endTime}`}</div>
-                      <div className="text-sm text-muted-foreground print:text-xs">
-                        {slot.type === 'class' ? `Period ${slot.period}` : slot.period}
-                      </div>
-                    </TableCell>
-                    {slot.type === 'class' ? (
-                      days.map((day) => {
-                        const classPeriods = schedule.filter(s => s.type === 'class');
-                        const currentClassIndex = classPeriods.findIndex(p => p.period === slot.period);
-                        const subject = timetableData[day as keyof typeof timetableData][currentClassIndex] || "";
-                        return (
-                          <TableCell key={day} className="text-center p-2 print:py-0.5 print:px-1 print:text-xs">
-                            {isEditing ? (
-                              <Input
-                                type="text"
-                                value={subject}
-                                onChange={(e) => handleSubjectChange(e, day, currentClassIndex)}
-                                className="text-center h-8 print:border-none print:p-0 print:h-auto"
-                              />
-                            ) : (
-                              <span>{subject}</span>
-                            )}
-                          </TableCell>
-                        );
-                      })
-                    ) : (
-                      <TableCell colSpan={days.length} className="text-center font-semibold bg-secondary p-2 print:py-0.5 print:px-1 print:text-xs">
-                        {slot.period}
+                {schedule.map((slot, slotIndex) => {
+                  const classPeriods = schedule.filter(s => s.type === 'class');
+                  const isEvenClassRow = classPeriods.findIndex(p => p.period === slot.period) % 2 === 0;
+
+                  const rowColor =
+                    slot.type === 'break' ? 'bg-green-50' :
+                    slot.type === 'event' ? 'bg-yellow-50' :
+                    isEvenClassRow ? 'bg-white' : 'bg-slate-50';
+
+                  return (
+                    <TableRow key={slotIndex} className={rowColor}>
+                      <TableCell className="font-medium p-2 print:py-0.5 print:px-1 print:text-xs">
+                        <div>{`${slot.startTime} - ${slot.endTime}`}</div>
+                        <div className="text-sm text-muted-foreground print:text-xs">
+                          {slot.type === 'class' ? `Period ${slot.period}` : slot.period}
+                        </div>
                       </TableCell>
-                    )}
-                  </TableRow>
-                ))}
+                      {slot.type === 'class' ? (
+                        days.map((day) => {
+                          const currentClassIndex = classPeriods.findIndex(p => p.period === slot.period);
+                          const subject = timetableData[day as keyof typeof timetableData][currentClassIndex] || "";
+                          return (
+                            <TableCell key={day} className="text-center p-2 print:py-0.5 print:px-1 print:text-xs">
+                              {isEditing ? (
+                                <Input
+                                  type="text"
+                                  value={subject}
+                                  onChange={(e) => handleSubjectChange(e, day, currentClassIndex)}
+                                  className="text-center h-8 print:border-none print:p-0 print:h-auto bg-transparent"
+                                />
+                              ) : (
+                                <span>{subject}</span>
+                              )}
+                            </TableCell>
+                          );
+                        })
+                      ) : (
+                        <TableCell colSpan={days.length} className="text-center font-semibold p-2 print:py-0.5 print:px-1 print:text-xs">
+                          {slot.period}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
