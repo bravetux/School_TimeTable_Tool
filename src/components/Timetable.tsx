@@ -106,16 +106,16 @@ const Timetable = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-bold min-w-[150px] p-2 print:p-1 print:text-sm">Time / Day</TableHead>
+                  <TableHead className="font-bold min-w-[150px] p-2 print:p-1 print:text-xs">Time / Day</TableHead>
                   {days.map((day) => (
-                    <TableHead key={day} className="text-center font-bold min-w-[120px] p-2 print:p-1 print:text-sm">{day}</TableHead>
+                    <TableHead key={day} className="text-center font-bold min-w-[120px] p-2 print:p-1 print:text-xs">{day}</TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {schedule.map((slot, slotIndex) => (
                   <TableRow key={slotIndex}>
-                    <TableCell className="font-medium p-2 print:p-1 print:text-sm">
+                    <TableCell className="font-medium p-2 print:py-0.5 print:px-1 print:text-xs">
                       <div>{`${slot.startTime} - ${slot.endTime}`}</div>
                       <div className="text-sm text-muted-foreground print:text-xs">
                         {slot.type === 'class' ? `Period ${slot.period}` : slot.period}
@@ -127,7 +127,7 @@ const Timetable = () => {
                         const currentClassIndex = classPeriods.findIndex(p => p.period === slot.period);
                         const subject = timetableData[day as keyof typeof timetableData][currentClassIndex] || "";
                         return (
-                          <TableCell key={day} className="text-center p-2 print:p-1 print:text-sm">
+                          <TableCell key={day} className="text-center p-2 print:py-0.5 print:px-1 print:text-xs">
                             {isEditing ? (
                               <Input
                                 type="text"
@@ -142,7 +142,7 @@ const Timetable = () => {
                         );
                       })
                     ) : (
-                      <TableCell colSpan={days.length} className="text-center font-semibold bg-secondary p-2 print:p-1 print:text-sm">
+                      <TableCell colSpan={days.length} className="text-center font-semibold bg-secondary p-2 print:py-0.5 print:px-1 print:text-xs">
                         {slot.period}
                       </TableCell>
                     )}
