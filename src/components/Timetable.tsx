@@ -12,6 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Printer } from "lucide-react";
 
 const schedule = [
   { period: "Prayer", startTime: "9:00 AM", endTime: "9:20 AM", type: 'event' },
@@ -51,15 +52,28 @@ const Timetable = () => {
     setTimetableData(newTimetableData);
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="w-full print:shadow-none print:border-none">
+      <CardHeader className="flex flex-row items-center justify-between print:hidden">
         <CardTitle className="text-2xl">Weekly School Timetable</CardTitle>
-        <Button onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? "Save" : "Edit"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setIsEditing(!isEditing)}>
+            {isEditing ? "Save" : "Edit"}
+          </Button>
+          <Button variant="outline" onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" />
+            Print
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
+        <div className="hidden print:block text-center mb-4">
+          <h1 className="text-2xl font-bold">Weekly School Timetable</h1>
+        </div>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -90,7 +104,7 @@ const Timetable = () => {
                               type="text"
                               value={subject}
                               onChange={(e) => handleSubjectChange(e, day, dataIndex)}
-                              className="text-center"
+                              className="text-center print:border-none print:p-0 print:h-auto"
                             />
                           ) : (
                             <span>{subject}</span>
