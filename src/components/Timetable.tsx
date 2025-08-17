@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -7,6 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const schedule = [
   { period: "Prayer", startTime: "9:00 AM", endTime: "9:20 AM", type: 'event' },
@@ -23,7 +28,7 @@ const schedule = [
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-const timetableData: { [key: string]: string[] } = {
+const initialTimetableData: { [key: string]: string[] } = {
   Monday: ["Math", "Science", "English", "History", "Art", "Music", "P.E.", "Library"],
   Tuesday: ["Science", "Math", "History", "English", "P.E.", "Library", "Art", "Music"],
   Wednesday: ["English", "History", "Math", "Science", "Music", "Art", "Library", "P.E."],
@@ -32,10 +37,27 @@ const timetableData: { [key: string]: string[] } = {
 };
 
 const Timetable = () => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [timetableData, setTimetableData] = useState(initialTimetableData);
+
+  const handleSubjectChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    day: string,
+    periodIndex: number
+  ) => {
+    const newTimetableData = { ...timetableData };
+    newTimetableData[day] = [...newTimetableData[day]];
+    newTimetableData[day][periodIndex] = e.target.value;
+    setTimetableData(newTimetableData);
+  };
+
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-center text-2xl">Weekly School Timetable</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-2xl">Weekly School Timetable</CardTitle>
+        <Button onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? "Save" : "Edit"}
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -49,8 +71,8 @@ const Timetable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {schedule.map((slot, index) => (
-                <TableRow key={index}>
+              {schedule.map((slot) => (
+                <TableRow key={typeof slot.period === 'number' ? `period-${slot.period}` : slot.period}>
                   <TableCell className="font-medium">
                     <div>{`${slot.startTime} - ${slot.endTime}`}</div>
                     <div className="text-sm text-muted-foreground">
@@ -63,7 +85,16 @@ const Timetable = () => {
                       const subject = timetableData[day][dataIndex] || "";
                       return (
                         <TableCell key={day} className="text-center">
-                          {subject}
+                          {isEditing ? (
+                            <Input
+                              type="text"
+                              value={subject}
+                              onChange={(e) => handleSubjectChange(e, day, dataIndex)}
+                              className="text-center"
+                            />
+                          ) : (
+                            <span>{subject}</span>
+                          )}
                         </TableCell>
                       );
                     })
