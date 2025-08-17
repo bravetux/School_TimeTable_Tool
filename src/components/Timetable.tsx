@@ -78,18 +78,18 @@ const Timetable = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="font-bold min-w-[150px]">Time / Day</TableHead>
+                <TableHead className="font-bold min-w-[150px] p-2 print:p-1 print:text-sm">Time / Day</TableHead>
                 {days.map((day) => (
-                  <TableHead key={day} className="text-center font-bold min-w-[120px]">{day}</TableHead>
+                  <TableHead key={day} className="text-center font-bold min-w-[120px] p-2 print:p-1 print:text-sm">{day}</TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
               {schedule.map((slot) => (
                 <TableRow key={typeof slot.period === 'number' ? `period-${slot.period}` : slot.period}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium p-2 print:p-1 print:text-sm">
                     <div>{`${slot.startTime} - ${slot.endTime}`}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground print:text-xs">
                       {typeof slot.period === 'number' ? `Period ${slot.period}` : slot.period}
                     </div>
                   </TableCell>
@@ -98,13 +98,13 @@ const Timetable = () => {
                       const dataIndex = (slot.period as number) - 1;
                       const subject = timetableData[day][dataIndex] || "";
                       return (
-                        <TableCell key={day} className="text-center">
+                        <TableCell key={day} className="text-center p-2 print:p-1 print:text-sm">
                           {isEditing ? (
                             <Input
                               type="text"
                               value={subject}
                               onChange={(e) => handleSubjectChange(e, day, dataIndex)}
-                              className="text-center print:border-none print:p-0 print:h-auto"
+                              className="text-center h-8 print:border-none print:p-0 print:h-auto"
                             />
                           ) : (
                             <span>{subject}</span>
@@ -113,7 +113,7 @@ const Timetable = () => {
                       );
                     })
                   ) : (
-                    <TableCell colSpan={days.length} className="text-center font-semibold bg-secondary">
+                    <TableCell colSpan={days.length} className="text-center font-semibold bg-secondary p-2 print:p-1 print:text-sm">
                       {slot.period}
                     </TableCell>
                   )}
