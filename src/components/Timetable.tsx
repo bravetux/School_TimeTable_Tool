@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -14,42 +14,55 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Printer, Settings } from "lucide-react";
 import { SettingsPanel } from "./SettingsPanel";
+import { generateSchedule, ScheduleSlot, ScheduleSettings } from "@/lib/scheduleGenerator";
 
-interface ScheduleSlot {
-  period: string | number;
-  startTime: string;
-  endTime: string;
-  type: 'class' | 'break' | 'event';
-}
-
-const initialSchedule: ScheduleSlot[] = [
-  { period: "Prayer", startTime: "9:00 AM", endTime: "9:20 AM", type: 'event' },
-  { period: 1, startTime: "9:20 AM", endTime: "10:05 AM", type: 'class' },
-  { period: 2, startTime: "10:05 AM", endTime: "10:50 AM", type: 'class' },
-  { period: 3, startTime: "10:50 AM", endTime: "11:35 AM", type: 'class' },
-  { period: 4, startTime: "11:35 AM", endTime: "12:20 PM", type: 'class' },
-  { period: "Lunch", startTime: "12:20 PM", endTime: "1:20 PM", type: 'break' },
-  { period: 5, startTime: "1:20 PM", endTime: "2:05 PM", type: 'class' },
-  { period: 6, startTime: "2:05 PM", endTime: "2:50 PM", type: 'class' },
-  { period: 7, startTime: "2:50 PM", endTime: "3:30 PM", type: 'class' },
-  { period: 8, startTime: "3:30 PM", endTime: "4:10 PM", type: 'class' },
-];
+const initialSettings: ScheduleSettings = {
+  prayerStartTime: "9:00 AM",
+  prayerDuration: 20,
+  schoolStartTime: "9:20 AM",
+  numberOfPeriods: 8,
+  uniformPeriodDuration: 45,
+  useVariation: true,
+  lastPeriodsCount: 2,
+  lastPeriodDuration: 40,
+  breaks: [
+    { id: 'lunch', name: 'Lunch', startTime: '12:20 PM', endTime: '1:20 PM', enabled: true },
+    { id: 'break1', name: 'Short Break 1', startTime: '10:50 AM', endTime: '11:05 AM', enabled: false },
+    { id: 'break2', name: 'Short Break 2', startTime: '2:50 PM', endTime: '3:05 PM', enabled: false },
+  ],
+};
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-const initialTimetableData: { [key: string]: string[] } = {
-  Monday: ["Math", "Science", "English", "History", "Art", "Music", "P.E.", "Library"],
-  Tuesday: ["Science", "Math", "History", "English", "P.E.", "Library", "Art", "Music"],
-  Wednesday: ["English", "History", "Math", "Science", "Music", "Art", "Library", "P.E."],
-  Thursday: ["History", "English", "Science", "Math", "Library", "P.E.", "Music", "Art"],
-  Friday: ["P.E.", "Library", "Art", "Music", "Math", "Science", "English", "History"],
+const initialTimetableData = (numPeriods: number) => {
+  const base = {
+    Monday: ["Math", "Science", "English", "History", "Art", "Music", "P.E.", "Library"],
+    Tuesday: ["Science", "Math", "History", "English", "P.E.", "Library", "Art", "Music"],
+    Wednesday: ["English", "History", "Math", "Science", "Music", "Art", "Library", "P.E."],
+    Thursday: ["History", "English", "Science", "Math", "Library", "P.E.", "Music", "Art"],
+    Friday: ["P.E.", "Library", "Art", "Music", "Math", "Science", "English", "History"],
+  };
+  // Ensure the data array is long enough for the number of periods
+  for (const day in base) {
+    while (base[day as keyof typeof base].length < numPeriods) {
+      base[day as keyof typeof base].push("-");
+    }
+  }
+  return base;
 };
 
 const Timetable = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [timetableData, setTimetableData] = useState(initialTimetableData);
-  const [schedule, setSchedule] = useState<ScheduleSlot[]>(initialSchedule);
+  const [settings, setSettings] = useState<ScheduleSettings>(initialSettings);
+  const [schedule, setSchedule] = useState<ScheduleSlot[]>([]);
+  const [timetableData, setTimetableData] = useState(initialTimetableData(settings.numberOfPeriods));
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    const newSchedule = generateSchedule(settings);
+    setSchedule(newSchedule);
+    setTimetableData(initialTimetableData(settings.numberOfPeriods));
+  }, [settings]);
 
   const handleSubjectChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -57,8 +70,8 @@ const Timetable = () => {
     periodIndex: number
   ) => {
     const newTimetableData = { ...timetableData };
-    newTimetableData[day] = [...newTimetableData[day]];
-    newTimetableData[day][periodIndex] = e.target.value;
+    newTimetableData[day as keyof typeof timetableData] = [...newTimetableData[day as keyof typeof timetableData]];
+    newTimetableData[day as keyof typeof timetableData][periodIndex] = e.target.value;
     setTimetableData(newTimetableData);
   };
 
@@ -112,7 +125,7 @@ const Timetable = () => {
                       days.map((day) => {
                         const classPeriods = schedule.filter(s => s.type === 'class');
                         const currentClassIndex = classPeriods.findIndex(p => p.period === slot.period);
-                        const subject = timetableData[day][currentClassIndex] || "";
+                        const subject = timetableData[day as keyof typeof timetableData][currentClassIndex] || "";
                         return (
                           <TableCell key={day} className="text-center p-2 print:p-1 print:text-sm">
                             {isEditing ? (
@@ -143,8 +156,8 @@ const Timetable = () => {
       <SettingsPanel
         isOpen={isSettingsOpen}
         setIsOpen={setIsSettingsOpen}
-        schedule={schedule}
-        setSchedule={setSchedule}
+        settings={settings}
+        setSettings={setSettings}
       />
     </>
   );
